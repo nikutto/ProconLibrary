@@ -23,13 +23,14 @@ struct LinkCutTree
         int index;
         T key, sum;
         int sz;
+        bool rev;
 
         bool is_root()
         {
             return !p || (p->l != this && p->r != this);
         }
 
-        Node(int index, const T &key) : l(nullptr), r(nullptr), p(nullptr), index(index), key(key), sum(key), sz(1) {}
+        Node(int index, const T &key) : l(nullptr), r(nullptr), p(nullptr), index(index), key(key), sum(key), sz(1), remove(false) {}
     };
 
     // ID:index, value:v のノードを生成
@@ -81,6 +82,27 @@ struct LinkCutTree
             if (y->r == x)
                 y->r = t;
             update(y);
+        }
+    }
+
+    // 反転処理
+    void toggle(Node *t)
+    {
+        assert(t);
+        swap(t->l, t->r);
+        // 非可換ならここで反転処理
+        t->rev ^= true;
+    }
+
+    void push(Node *t)
+    {
+        if (t->rev)
+        {
+            if (t->l)
+                toggle(t->l);
+            if (t->r)
+                toggle(t->r);
+            t->rev = false;
         }
     }
 
@@ -148,5 +170,13 @@ struct LinkCutTree
         }
         splay(t);
         return rp;
+    }
+
+    // evert(v): v を根にする
+    void evert(Node *t)
+    {
+        expose(t);
+        toggle(t);
+        push(t);
     }
 };
